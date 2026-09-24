@@ -9,10 +9,12 @@ import ForgotPassword from "../pages/auth/ForgotPassword.jsx";
 import VerifyOTP from "../pages/auth/VerifyOTP.jsx";
 import ResetPassword from "../pages/auth/ResetPassword.jsx";
 import AdminDashboard from "../pages/admin/AdminDashboard.jsx";
+import AdminProfile from "../pages/admin/AdminProfile.jsx";
 import FarmerDashboard from "../pages/farmer/FarmerDashboard.jsx";
 import CustomerDashboard from "../pages/customer/CustomerDashboard.jsx";
 import NotFound from "../pages/NotFound.jsx";
 import ProtectedRoute from "../components/common/ProtectedRoute.jsx";
+import { AdminProfileImageProvider } from "../context/AdminProfileImageProvider.jsx";
 
 const AppRoutes = () => {
   return (
@@ -42,7 +44,19 @@ const AppRoutes = () => {
           path="/admin/dashboard"
           element={
             <ProtectedRoute role="admin">
-              <AdminDashboard />
+              <AdminProfileImageProvider>
+                <AdminDashboard />
+              </AdminProfileImageProvider>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/profile"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminProfileImageProvider>
+                <AdminProfile />
+              </AdminProfileImageProvider>
             </ProtectedRoute>
           }
         />
