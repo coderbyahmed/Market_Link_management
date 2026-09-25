@@ -15,10 +15,22 @@ import AdminAllUsers from "../pages/admin/users/AdminAllUsers.jsx";
 import AdminFarmers from "../pages/admin/users/AdminFarmers.jsx";
 import AdminCustomers from "../pages/admin/users/AdminCustomers.jsx";
 import FarmerDashboard from "../pages/farmer/FarmerDashboard.jsx";
+import FarmerProfile from "../pages/farmer/FarmerProfile.jsx";
+import FarmerNotifications from "../pages/farmer/FarmerNotifications.jsx";
+import FarmerAllProducts from "../pages/farmer/products/AllProducts.jsx";
+import FarmerAddProduct from "../pages/farmer/products/AddProduct.jsx";
+import FarmerProductRequests from "../pages/farmer/products/ProductRequests.jsx";
+import FarmerWeeklyStock from "../pages/farmer/products/WeeklyStock.jsx";
+import FarmerOrders from "../pages/farmer/Orders.jsx";
+import FarmerCropListings from "../pages/farmer/CropListings.jsx";
+import FarmerReviews from "../pages/farmer/Reviews.jsx";
+import FarmerReports from "../pages/farmer/Reports.jsx";
+import FarmerSettings from "../pages/farmer/Settings.jsx";
 import CustomerDashboard from "../pages/customer/CustomerDashboard.jsx";
 import NotFound from "../pages/NotFound.jsx";
 import ProtectedRoute from "../components/common/ProtectedRoute.jsx";
 import { AdminProfileImageProvider } from "../context/AdminProfileImageProvider.jsx";
+import { FarmerProfileImageProvider } from "../context/FarmerProfileImageProvider.jsx";
 
 const AppRoutes = () => {
   return (
@@ -108,7 +120,127 @@ const AppRoutes = () => {
           path="/farmer"
           element={
             <ProtectedRoute role="farmer">
-              <FarmerDashboard />
+              <Navigate to="/farmer/dashboard" replace />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/farmer/dashboard"
+          element={
+            <ProtectedRoute role="farmer">
+              <FarmerProfileImageProvider>
+                <FarmerDashboard />
+              </FarmerProfileImageProvider>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/farmer/profile"
+          element={
+            <ProtectedRoute role="farmer">
+              <FarmerProfileImageProvider>
+                <FarmerProfile />
+              </FarmerProfileImageProvider>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/farmer/notifications"
+          element={
+            <ProtectedRoute role="farmer">
+              <FarmerProfileImageProvider>
+                <FarmerNotifications />
+              </FarmerProfileImageProvider>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/farmer/products"
+          element={
+            <ProtectedRoute role="farmer">
+              <FarmerProfileImageProvider>
+                <FarmerAllProducts />
+              </FarmerProfileImageProvider>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/farmer/products/add"
+          element={
+            <ProtectedRoute role="farmer">
+              <FarmerProfileImageProvider>
+                <FarmerAddProduct />
+              </FarmerProfileImageProvider>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/farmer/products/requests"
+          element={
+            <ProtectedRoute role="farmer">
+              <FarmerProfileImageProvider>
+                <FarmerProductRequests />
+              </FarmerProfileImageProvider>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/farmer/products/weekly-stock"
+          element={
+            <ProtectedRoute role="farmer">
+              <FarmerProfileImageProvider>
+                <FarmerWeeklyStock />
+              </FarmerProfileImageProvider>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/farmer/orders"
+          element={
+            <ProtectedRoute role="farmer">
+              <FarmerProfileImageProvider>
+                <FarmerOrders />
+              </FarmerProfileImageProvider>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/farmer/crop-listings"
+          element={
+            <ProtectedRoute role="farmer">
+              <FarmerProfileImageProvider>
+                <FarmerCropListings />
+              </FarmerProfileImageProvider>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/farmer/reviews"
+          element={
+            <ProtectedRoute role="farmer">
+              <FarmerProfileImageProvider>
+                <FarmerReviews />
+              </FarmerProfileImageProvider>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/farmer/reports"
+          element={
+            <ProtectedRoute role="farmer">
+              <FarmerProfileImageProvider>
+                <FarmerReports />
+              </FarmerProfileImageProvider>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/farmer/settings"
+          element={
+            <ProtectedRoute role="farmer">
+              <FarmerProfileImageProvider>
+                <FarmerSettings />
+              </FarmerProfileImageProvider>
             </ProtectedRoute>
           }
         />

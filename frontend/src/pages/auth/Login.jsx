@@ -32,15 +32,15 @@ const Login = () => {
 
   useEffect(() => {
     if (
-      role === "admin" &&
+      (role === "admin" || role === "farmer") &&
       location.state?.logout &&
       consumedLogoutKey.current !== location.key
     ) {
       consumedLogoutKey.current = location.key;
-      showSuccess("Admin Logout Successful");
+      showSuccess(`${meta.capitalized} Logout Successful`);
       navigate(location.pathname, { replace: true, state: null });
     }
-  }, [role, location, navigate]);
+  }, [role, location, navigate, meta]);
 
   if (!ROLES.includes(role)) {
     return <Navigate to="/404" replace />;

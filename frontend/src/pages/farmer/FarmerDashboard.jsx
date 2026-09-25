@@ -1,13 +1,11 @@
-import { GiFarmTractor } from "react-icons/gi";
-import DashboardPlaceholder from "../../components/common/DashboardPlaceholder.jsx";
+import FarmerLayout from "../../components/farmer/layout/FarmerLayout.jsx";
+import FarmerDashboardContent from "../../components/farmer/dashboard/FarmerDashboardContent.jsx";
 
 const FarmerDashboard = () => {
   return (
-    <DashboardPlaceholder
-      role="Farmer"
-      icon={GiFarmTractor}
-      description="Manage your farm profile, list products, and connect with local customers."
-    />
+    <FarmerLayout>
+      <FarmerDashboardContent />
+    </FarmerLayout>
   );
 };
 
