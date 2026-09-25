@@ -7,7 +7,16 @@ import AlertMessage from "../../components/common/feedback/AlertMessage.jsx";
 import { notifySuccess } from "../../components/common/feedback/NotificationProvider.jsx";
 import { ROLES, roleMeta } from "../../components/auth/roleMeta.js";
 import { validateOtp } from "../../validations/auth.validation.js";
-import { forgotPassword, verifyOtp, cancelOtp } from "../../services/auth.service.js";
+import {
+  forgotPassword as adminForgotPassword,
+  verifyOtp as adminVerifyOtp,
+  cancelOtp as adminCancelOtp,
+} from "../../services/auth.service.js";
+import {
+  forgotPassword as farmerForgotPassword,
+  verifyOtp as farmerVerifyOtp,
+  cancelOtp as farmerCancelOtp,
+} from "../../services/farmerAuth.service.js";
 import {
   saveOtpExpiry,
   getOtpExpiry,
@@ -34,7 +43,6 @@ const VerifyOTP = () => {
   const email = (searchParams.get("email") || "").trim();
 
   const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(""));
-  const [resendMessage, setResendMessage] = useState("");
   const [alert, setAlert] = useState("");
   const [loading, setLoading] = useState(false);
   const [expiresAt, setExpiresAt] = useState(() => {
@@ -46,11 +54,12 @@ const VerifyOTP = () => {
   const [secondsLeft, setSecondsLeft] = useState(0);
   const inputsRef = useRef([]);
 
-  const isAdminFlow = role === "admin";
+  const sendOtp = role === "farmer" ? farmerForgotPassword : adminForgotPassword;
+  const verifyOtp =
+    role === "farmer" ? farmerVerifyOtp : adminVerifyOtp;
+  const cancelOtp = role === "farmer" ? farmerCancelOtp : adminCancelOtp;
 
   useEffect(() => {
-    if (!isAdminFlow) return undefined;
-
     const tick = () => {
       setSecondsLeft(Math.max(0, Math.floor((expiresAt - Date.now()) / 1000)));
     };
@@ -59,13 +68,13 @@ const VerifyOTP = () => {
     const timerId = setInterval(tick, 1000);
 
     return () => clearInterval(timerId);
-  }, [isAdminFlow, expiresAt]);
+  }, [expiresAt]);
 
   if (!ROLES.includes(role)) {
     return <Navigate to="/404" replace />;
   }
 
-  if (isAdminFlow && !email) {
+  if (!email) {
     return <Navigate to={`/forgot-password/${role}`} replace />;
   }
 
@@ -105,12 +114,6 @@ const VerifyOTP = () => {
     e.preventDefault();
     if (loading) return;
 
-    if (!isAdminFlow) {
-      setLoading(true);
-      navigate(`/reset-password/${role}`);
-      return;
-    }
-
     const code = otp.join("");
 
     const { errors, isValid } = validateOtp({ otp: code });
@@ -123,7 +126,7 @@ const VerifyOTP = () => {
     setAlert("");
 
     try {
-      const data = await verifyOtp({ email, otp: code });
+      const data = await verifyOtp({ email, otp: code, role });
 
       saveResetVerification({ email, resetToken: data?.resetToken });
       clearOtpExpiry();
@@ -150,21 +153,13 @@ const VerifyOTP = () => {
 
   const handleResend = async () => {
     if (loading) return;
-
-    if (!isAdminFlow) {
-      setResendMessage("A new OTP has been sent to your email.");
-      setOtp(Array(OTP_LENGTH).fill(""));
-      inputsRef.current[0]?.focus();
-      return;
-    }
-
     if (secondsLeft > 0) return;
 
     setLoading(true);
     setAlert("");
 
     try {
-      await forgotPassword({ email, role });
+      await sendOtp({ email, role });
 
       const nextExpiry = Date.now() + OTP_VALIDITY_MINUTES * 60 * 1000;
       saveOtpExpiry(nextExpiry);
@@ -174,8 +169,7 @@ const VerifyOTP = () => {
 
       notifySuccess({
         message: "OTP Sent Successfully",
-        description:
-          "A new verification code has been sent to your registered admin email address. Please check your email and enter the OTP within 5 minutes.",
+        description: `A new verification code has been sent to your registered ${meta.label} email address. Please check your email and enter the OTP within 5 minutes.`,
       });
     } catch (error) {
       setAlert(error.message);
@@ -187,7 +181,7 @@ const VerifyOTP = () => {
   const invalidateAttempt = async () => {
     if (!email) return;
     try {
-      await cancelOtp({ email });
+      await cancelOtp({ email, role });
     } catch {
       // best effort: continue clearing local state even if cancel fails
     }
@@ -195,14 +189,12 @@ const VerifyOTP = () => {
   };
 
   const handleBackToForgot = async (event) => {
-    if (!isAdminFlow) return;
     event.preventDefault();
     await invalidateAttempt();
     navigate(`/forgot-password/${role}`);
   };
 
   const handleBackToHome = async (event) => {
-    if (!isAdminFlow) return;
     event.preventDefault();
     await invalidateAttempt();
     navigate("/");
@@ -225,13 +217,11 @@ const VerifyOTP = () => {
         Enter the 6-digit code we sent to your email to verify your identity.
       </p>
 
-      {isAdminFlow && (
-        <p className="mt-1 text-xs text-stone-500">
-          A verification code was sent to <span className="font-medium text-stone-700">{email}</span>.
-        </p>
-      )}
+      <p className="mt-1 text-xs text-stone-500">
+        A verification code was sent to <span className="font-medium text-stone-700">{email}</span>.
+      </p>
 
-      {isAdminFlow && alert && (
+      {alert && (
         <div className="mt-6">
           <AlertMessage type="error" message={alert} />
         </div>
@@ -270,7 +260,7 @@ const VerifyOTP = () => {
         <button
           type="button"
           onClick={handleResend}
-          disabled={isAdminFlow && secondsLeft > 0}
+          disabled={secondsLeft > 0}
           className="font-semibold text-brand-700 hover:text-brand-800 disabled:cursor-not-allowed disabled:text-stone-400"
         >
           Resend OTP
@@ -285,24 +275,16 @@ const VerifyOTP = () => {
         </Link>
       </div>
 
-      {isAdminFlow && (
-        <p className="mt-2 text-center text-sm text-stone-600">
-          {secondsLeft > 0 ? (
-            <>
-              Code expires in{" "}
-              <span className="font-semibold text-stone-800">{formatTime(secondsLeft)}</span>
-            </>
-          ) : (
-            "Code expired. You can request a new one."
-          )}
-        </p>
-      )}
-
-      {!isAdminFlow && resendMessage && (
-        <p className="mt-4 rounded-lg bg-brand-50 px-4 py-3 text-center text-sm text-brand-700">
-          {resendMessage}
-        </p>
-      )}
+      <p className="mt-2 text-center text-sm text-stone-600">
+        {secondsLeft > 0 ? (
+          <>
+            Code expires in{" "}
+            <span className="font-semibold text-stone-800">{formatTime(secondsLeft)}</span>
+          </>
+        ) : (
+          "Code expired. You can request a new one."
+        )}
+      </p>
 
       <div className="mt-6 border-t border-stone-200 pt-4 text-center">
         <Link

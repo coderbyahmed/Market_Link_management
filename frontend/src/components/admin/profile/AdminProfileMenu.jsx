@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FaUserShield, FaCaretDown } from "react-icons/fa";
 import useLogout from "../../../hooks/useLogout.js";
 import { useAdminProfileImage } from "../../../hooks/useAdminProfileImage.js";
+import { getUser } from "../../../utils/auth.js";
 
 const menuItems = [
   { key: "profile", label: "Profile" },
@@ -15,6 +16,10 @@ const AdminProfileMenu = () => {
   const navigate = useNavigate();
   const logout = useLogout();
   const { savedProfileImage } = useAdminProfileImage();
+  const storedUser = getUser();
+
+  const userName = storedUser?.name || "Admin";
+  const userEmail = storedUser?.email || "admin@marketlink.com";
 
   const handleMenuClick = ({ key }) => {
     if (key === "profile") {
@@ -41,10 +46,10 @@ const AdminProfileMenu = () => {
         )}
         <span className="hidden text-left sm:block">
           <span className="block text-sm font-semibold text-stone-800 dark:text-white">
-            Admin
+            {userName}
           </span>
           <span className="block text-xs text-stone-400 dark:text-stone-500">
-            admin@marketlink.com
+            {userEmail}
           </span>
         </span>
         <FaCaretDown className="hidden h-3 w-3 text-stone-400 sm:block" />

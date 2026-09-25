@@ -14,6 +14,39 @@ const getErrorMessage = (error) => {
   return "Something went wrong. Please try again.";
 };
 
+const registerCustomer = async ({
+  name,
+  email,
+  phone,
+  password,
+  confirmPassword,
+}) => {
+  try {
+    const response = await api.post("/api/auth/customer/register", {
+      name,
+      email,
+      phone,
+      password,
+      confirmPassword,
+    });
+    return response.data?.data ?? null;
+  } catch (error) {
+    throw new Error(getErrorMessage(error), { cause: error });
+  }
+};
+
+const loginCustomer = async ({ email, password }) => {
+  try {
+    const response = await api.post("/api/auth/customer/login", {
+      email,
+      password,
+    });
+    return response.data?.data ?? null;
+  } catch (error) {
+    throw new Error(getErrorMessage(error), { cause: error });
+  }
+};
+
 const login = async ({ email, password }) => {
   try {
     const response = await api.post("/api/auth/login", { email, password });
@@ -31,29 +64,42 @@ const forgotPassword = async ({ email, role }) => {
   }
 };
 
-const verifyOtp = async ({ email, otp }) => {
+const verifyOtp = async ({ email, otp, role }) => {
   try {
-    const response = await api.post("/api/auth/verify-otp", { email, otp });
+    const response = await api.post("/api/auth/verify-otp", { email, otp, role });
     return response.data?.data ?? null;
   } catch (error) {
     throw new Error(getErrorMessage(error), { cause: error });
   }
 };
 
-const cancelOtp = async ({ email }) => {
+const cancelOtp = async ({ email, role }) => {
   try {
-    await api.post("/api/auth/cancel-otp", { email });
+    await api.post("/api/auth/cancel-otp", { email, role });
   } catch (error) {
     throw new Error(getErrorMessage(error), { cause: error });
   }
 };
 
-const resetPassword = async ({ email, resetToken, newPassword }) => {
+const resetPassword = async ({ email, resetToken, newPassword, role }) => {
   try {
-    await api.post("/api/auth/reset-password", { email, resetToken, newPassword });
+    await api.post("/api/auth/reset-password", {
+      email,
+      resetToken,
+      newPassword,
+      role,
+    });
   } catch (error) {
     throw new Error(getErrorMessage(error), { cause: error });
   }
 };
 
-export { login, forgotPassword, verifyOtp, cancelOtp, resetPassword };
+export {
+  registerCustomer,
+  loginCustomer,
+  login,
+  forgotPassword,
+  verifyOtp,
+  cancelOtp,
+  resetPassword,
+};

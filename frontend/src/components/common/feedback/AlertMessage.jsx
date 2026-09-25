@@ -2,7 +2,7 @@ import { Alert } from "antd";
 
 const AlertMessage = ({ type = "info", message, description, ...rest }) => {
   return (
-    <Alert type={type} message={message} description={description} showIcon {...rest} />
+    <Alert type={type} title={message} description={description} showIcon {...rest} />
   );
 };
 

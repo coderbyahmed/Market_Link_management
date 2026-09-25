@@ -15,6 +15,7 @@ const AdminProfileImage = ({
   onSave,
   onRemove,
   saving,
+  removing,
 }) => {
   const validateFile = (file) => {
     if (!ALLOWED_TYPES.includes(file.type)) {
@@ -32,10 +33,12 @@ const AdminProfileImage = ({
     if (!validateFile(file)) return Upload.LIST_IGNORE;
 
     const reader = new FileReader();
-    reader.onload = () => onSelect(reader.result);
+    reader.onload = () => onSelect(reader.result, file);
     reader.readAsDataURL(file);
     return false;
   };
+
+  const imageBusy = saving || removing;
 
   return (
     <div className="rounded-2xl border border-stone-200/70 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
@@ -89,7 +92,7 @@ const AdminProfileImage = ({
                 variant="outline"
                 size="sm"
                 className="!border-red-300 !text-red-600 hover:!bg-red-50"
-                disabled={saving}
+                disabled={imageBusy}
               >
                 <FaTrashAlt className="h-3.5 w-3.5" /> Remove
               </Button>
@@ -97,7 +100,7 @@ const AdminProfileImage = ({
                 onClick={onSave}
                 size="sm"
                 loading={saving}
-                disabled={saving}
+                disabled={imageBusy}
               >
                 {saving ? "Saving..." : "Save Profile Picture"}
               </Button>
@@ -130,6 +133,7 @@ const AdminProfileImage = ({
               variant="outline"
               size="sm"
               className="ml-auto shrink-0 !border-red-300 !text-red-600 hover:!bg-red-50"
+              disabled={removing}
             >
               <FaTrashAlt className="h-3.5 w-3.5" /> Remove
             </Button>

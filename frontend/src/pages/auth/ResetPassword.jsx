@@ -1,16 +1,22 @@
 import { useState } from "react";
 import { Link, useParams, Navigate, useNavigate } from "react-router-dom";
-import { FaLock, FaCheckCircle } from "react-icons/fa";
+import { FaLock } from "react-icons/fa";
 import { Button as AntButton } from "antd";
 import AuthLayout from "../../components/auth/AuthLayout.jsx";
 import AuthInput from "../../components/auth/AuthInput.jsx";
-import Button from "../../components/common/Button.jsx";
 import AlertMessage from "../../components/common/feedback/AlertMessage.jsx";
 import { notifySuccess } from "../../components/common/feedback/NotificationProvider.jsx";
 import { ROLES, roleMeta } from "../../components/auth/roleMeta.js";
 import { validateResetPassword } from "../../validations/auth.validation.js";
 import { getResetVerification, clearResetVerification } from "../../utils/auth.js";
-import { cancelOtp, resetPassword } from "../../services/auth.service.js";
+import {
+  cancelOtp as adminCancelOtp,
+  resetPassword as adminResetPassword,
+} from "../../services/auth.service.js";
+import {
+  cancelOtp as farmerCancelOtp,
+  resetPassword as farmerResetPassword,
+} from "../../services/farmerAuth.service.js";
 
 const ResetPassword = () => {
   const { role } = useParams();
@@ -21,20 +27,23 @@ const ResetPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errors, setErrors] = useState({});
   const [alert, setAlert] = useState("");
-  const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
   if (!ROLES.includes(role)) {
     return <Navigate to="/404" replace />;
   }
 
-  const isAdminFlow = role === "admin";
   const resetVerification =
     typeof window !== "undefined" ? getResetVerification() : { email: "", resetToken: "" };
 
-  if (isAdminFlow && !resetVerification?.resetToken) {
+  if (!resetVerification?.resetToken) {
     return <Navigate to={`/forgot-password/${role}`} replace />;
   }
+
+  const submitReset =
+    role === "farmer" ? farmerResetPassword : adminResetPassword;
+  const submitCancel =
+    role === "farmer" ? farmerCancelOtp : adminCancelOtp;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -48,20 +57,15 @@ const ResetPassword = () => {
 
     if (!isValid) return;
 
-    if (!isAdminFlow) {
-      setLoading(true);
-      setSuccess(true);
-      return;
-    }
-
     setLoading(true);
     setAlert("");
 
     try {
-      await resetPassword({
+      await submitReset({
         email: resetVerification?.email,
         resetToken: resetVerification?.resetToken,
         newPassword,
+        role,
       });
 
       clearResetVerification();
@@ -82,7 +86,7 @@ const ResetPassword = () => {
 
   const clearAttempt = async () => {
     try {
-      await cancelOtp({ email: resetVerification?.email });
+      await submitCancel({ email: resetVerification?.email, role });
     } catch {
       // best effort: clear local state even if backend cancel fails
     }
@@ -90,36 +94,10 @@ const ResetPassword = () => {
   };
 
   const handleBackToHome = async (event) => {
-    if (!isAdminFlow) return;
     event.preventDefault();
     await clearAttempt();
     navigate("/");
   };
-
-  if (success) {
-    return (
-      <AuthLayout
-        title="Your password is safe with us"
-        subtitle="Secure access to your MarketLink account."
-      >
-        <div className="rounded-3xl border border-brand-100 bg-white p-8 text-center shadow-lg shadow-brand-100/40">
-          <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-brand-100 text-brand-700">
-            <FaCheckCircle className="h-8 w-8" />
-          </span>
-          <h1 className="mt-5 font-display text-2xl font-semibold text-stone-900">
-            Password Changed!
-          </h1>
-          <p className="mt-2 text-sm text-stone-600">
-            Your {meta.label} password has been reset successfully. You can now
-            login with your new password.
-          </p>
-          <Button to={`/login/${role}`} className="mt-6 w-full" size="lg">
-            Go to Login
-          </Button>
-        </div>
-      </AuthLayout>
-    );
-  }
 
   return (
     <AuthLayout
@@ -138,7 +116,7 @@ const ResetPassword = () => {
         Set a fresh password for your {meta.label} account.
       </p>
 
-      {isAdminFlow && alert && (
+      {alert && (
         <div className="mt-6">
           <AlertMessage type="error" message={alert} />
         </div>

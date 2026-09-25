@@ -1,27 +1,41 @@
 import { FaUserPlus, FaSignInAlt, FaKey } from "react-icons/fa";
 
-const activityItems = [
-  {
-    label: "Account Created",
-    value: "September 20, 2026",
-    icon: FaUserPlus,
-    accent: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400",
-  },
-  {
-    label: "Last Login",
-    value: "Today, 08:15 PM",
-    icon: FaSignInAlt,
-    accent: "bg-brand-100 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300",
-  },
-  {
-    label: "Last Password Change",
-    value: "September 20, 2026",
-    icon: FaKey,
-    accent: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400",
-  },
-];
+const formatDate = (value) => {
+  if (!value) return "—";
 
-const AdminActivity = () => {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return "—";
+
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
+
+const AdminActivity = ({ profile }) => {
+  const activityItems = [
+    {
+      label: "Account Created",
+      value: formatDate(profile?.createdAt),
+      icon: FaUserPlus,
+      accent: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400",
+    },
+    {
+      label: "Last Login",
+      value: "—",
+      icon: FaSignInAlt,
+      accent: "bg-brand-100 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300",
+    },
+    {
+      label: "Last Update",
+      value: formatDate(profile?.updatedAt),
+      icon: FaKey,
+      accent: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400",
+    },
+  ];
+
   return (
     <div className="rounded-2xl border border-stone-200/70 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
       <h2 className="font-display text-lg font-semibold tracking-tight text-stone-900 dark:text-white">

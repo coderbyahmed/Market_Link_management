@@ -1,4 +1,6 @@
 import nodemailer from "nodemailer";
+import buildCustomerWelcomeEmail from "../templates/emails/customerWelcome.template.js";
+import buildFarmerApprovedEmail from "../templates/emails/farmerApproved.template.js";
 
 let transporter;
 
@@ -85,4 +87,33 @@ This email was sent for password recovery purposes only. MarketLink will never a
     });
 };
 
-export { getTransporter, sendOtpEmail };
+const sendCustomerWelcomeEmail = async ({ to, name }) => {
+    const { subject, html, text } = buildCustomerWelcomeEmail({ name });
+
+    return getTransporter().sendMail({
+        from: `"MarketLink" <${process.env.EMAIL_USER}>`,
+        to,
+        subject,
+        html,
+        text,
+    });
+};
+
+const sendFarmerApprovalEmail = async ({ to, name }) => {
+    const { subject, html, text } = buildFarmerApprovedEmail({ name });
+
+    return getTransporter().sendMail({
+        from: `"MarketLink" <${process.env.EMAIL_USER}>`,
+        to,
+        subject,
+        html,
+        text,
+    });
+};
+
+export {
+    getTransporter,
+    sendOtpEmail,
+    sendCustomerWelcomeEmail,
+    sendFarmerApprovalEmail,
+};

@@ -17,7 +17,11 @@ const navItems = [
   {
     label: "Users",
     icon: FaUsers,
-    children: ["All Users", "Farmers", "Customers"],
+    children: [
+      { label: "All Users", to: "/admin/users" },
+      { label: "Farmers", to: "/admin/users/farmers" },
+      { label: "Customers", to: "/admin/users/customers" },
+    ],
   },
   {
     label: "Products",
@@ -48,6 +52,13 @@ const AdminNavigation = ({ collapsed = false, onNavigate = () => {} }) => {
       isActive
         ? "bg-brand-700 text-white shadow-sm"
         : "text-stone-600 hover:bg-brand-50 hover:text-brand-800 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-brand-400"
+    }`;
+
+  const childLinkClass = ({ isActive }) =>
+    `block rounded-lg px-3 py-2 text-sm transition-colors ${
+      isActive
+        ? "bg-brand-100 font-semibold text-brand-800 dark:bg-stone-800 dark:text-brand-400"
+        : "text-stone-600 hover:text-brand-800 dark:text-stone-400 dark:hover:text-brand-400"
     }`;
 
   return (
@@ -89,15 +100,26 @@ const AdminNavigation = ({ collapsed = false, onNavigate = () => {} }) => {
               </button>
               {!collapsed && open && (
                 <div className="ml-5 mt-1 space-y-1 border-l border-stone-200 pl-3 dark:border-stone-800">
-                  {item.children.map((child) => (
-                    <span
-                      key={child}
-                      className="flex items-center justify-between rounded-lg px-3 py-2 text-sm text-stone-500 dark:text-stone-400"
-                    >
-                      {child}
-                      {soonBadge}
-                    </span>
-                  ))}
+                  {item.children.map((child) =>
+                    typeof child === "string" ? (
+                      <span
+                        key={child}
+                        className="flex items-center justify-between rounded-lg px-3 py-2 text-sm text-stone-500 dark:text-stone-400"
+                      >
+                        {child}
+                        {soonBadge}
+                      </span>
+                    ) : (
+                      <NavLink
+                        key={child.to}
+                        to={child.to}
+                        className={childLinkClass}
+                        onClick={onNavigate}
+                      >
+                        {child.label}
+                      </NavLink>
+                    )
+                  )}
                 </div>
               )}
             </div>

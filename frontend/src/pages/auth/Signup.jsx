@@ -1,11 +1,20 @@
 import { useState } from "react";
-import { Link, useParams, Navigate } from "react-router-dom";
+import { Link, useParams, Navigate, useNavigate } from "react-router-dom";
 import { FaEnvelope, FaLock, FaUser, FaPhoneAlt } from "react-icons/fa";
 import { GiCorn } from "react-icons/gi";
 import AuthLayout from "../../components/auth/AuthLayout.jsx";
 import AuthInput from "../../components/auth/AuthInput.jsx";
 import Button from "../../components/common/Button.jsx";
 import { SIGNUP_ROLES, roleMeta } from "../../components/auth/roleMeta.js";
+import { validateSignup } from "../../validations/auth.validation.js";
+import { registerCustomer } from "../../services/auth.service.js";
+import { register as registerFarmer } from "../../services/farmerAuth.service.js";
+import {
+  showError,
+  showSuccess,
+} from "../../components/common/feedback/MessageProvider.jsx";
+import { notifySuccess } from "../../components/common/feedback/NotificationProvider.jsx";
+import AlertMessage from "../../components/common/feedback/AlertMessage.jsx";
 
 const specializations = [
   "Vegetables",
@@ -20,6 +29,7 @@ const specializations = [
 
 const Signup = () => {
   const { role } = useParams();
+  const navigate = useNavigate();
   const meta = roleMeta[role];
   const isFarmer = role === "farmer";
 
@@ -32,35 +42,122 @@ const Signup = () => {
     confirmPassword: "",
   });
   const [errors, setErrors] = useState({});
+  const [alert, setAlert] = useState("");
+  const [loading, setLoading] = useState(false);
 
   if (!SIGNUP_ROLES.includes(role)) {
     return <Navigate to="/404" replace />;
   }
 
   const handleChange = (e) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const fieldName = e.target.name;
+
+    setForm((prev) => ({ ...prev, [fieldName]: e.target.value }));
+    setErrors((prev) => ({ ...prev, [fieldName]: undefined }));
+    setAlert("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const nextErrors = {};
-    if (!form.name.trim()) nextErrors.name = "Full name is required";
-    if (!form.email.trim()) nextErrors.email = "Email is required";
-    if (!form.phone.trim()) nextErrors.phone = "Phone number is required";
-    if (isFarmer && !form.specialization)
-      nextErrors.specialization = "Please choose a specialization";
-    if (!form.password) nextErrors.password = "Password is required";
-    if (form.password && form.password.length < 6)
-      nextErrors.password = "Password must be at least 6 characters";
-    if (form.confirmPassword !== form.password)
-      nextErrors.confirmPassword = "Passwords do not match";
+    if (loading) return;
+
+    setAlert("");
+
+    if (isFarmer) {
+      const { errors: nextErrors, isValid } = validateSignup({
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        specialization: form.specialization,
+        password: form.password,
+        confirmPassword: form.confirmPassword,
+      });
+      setErrors(nextErrors);
+
+      if (!isValid) return;
+
+      setLoading(true);
+
+      try {
+        await registerFarmer({
+          name: form.name.trim(),
+          email: form.email.trim(),
+          phone: form.phone.trim(),
+          farmSpecialization: form.specialization,
+          password: form.password,
+        });
+
+        notifySuccess({
+          message: "Account Created Successfully",
+          description:
+            "Your farmer account has been created successfully. However, you cannot log in until an administrator approves your account.",
+        });
+
+        navigate(`/login/farmer`, { replace: true });
+      } catch (submitError) {
+        showError(submitError.message || "Something went wrong. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    const { errors: nextErrors, isValid } = validateSignup(
+      {
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        password: form.password,
+        confirmPassword: form.confirmPassword,
+      },
+      { requireSpecialization: false }
+    );
+
     setErrors(nextErrors);
+
+    if (!isValid) return;
+
+    setLoading(true);
+
+    try {
+      await registerCustomer({
+        name: form.name.trim(),
+        email: form.email.trim().toLowerCase(),
+        phone: form.phone.trim(),
+        password: form.password,
+        confirmPassword: form.confirmPassword,
+      });
+
+      showSuccess("Account created successfully.");
+      notifySuccess({
+        message: "Account Created Successfully",
+        description:
+          "Your customer account has been created successfully. You can now log in using your email address and password.",
+      });
+
+      navigate("/login/customer", { replace: true });
+    } catch (submitError) {
+      const errorMessage =
+        submitError.message || "Something went wrong. Please try again.";
+
+      setAlert(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <AuthLayout
-      title="Grow your harvest, grow your reach"
-      subtitle="Join MarketLink and start connecting directly with the people who buy what you grow."
+      title={
+        isFarmer
+          ? "Grow your harvest, grow your reach"
+          : "Fresh food, better shopping"
+      }
+      subtitle={
+        isFarmer
+          ? "Join MarketLink and start connecting directly with the people who buy what you grow."
+          : "Create your MarketLink account to shop directly with trusted local farmers."
+      }
     >
       <span className="inline-flex items-center gap-2 rounded-full bg-brand-100 px-3 py-1 text-xs font-semibold text-brand-700">
         <meta.icon className="h-3.5 w-3.5" />
@@ -73,6 +170,12 @@ const Signup = () => {
       <p className="mt-2 text-sm text-stone-600">
         Fill in your details to start your MarketLink journey.
       </p>
+
+      {alert && (
+        <div className="mt-6">
+          <AlertMessage type="error" message={alert} />
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-5" noValidate>
         <AuthInput
@@ -168,7 +271,7 @@ const Signup = () => {
           autoComplete="new-password"
         />
 
-        <Button type="submit" className="w-full" size="lg">
+        <Button type="submit" className="w-full" size="lg" loading={loading}>
           Create Account
         </Button>
       </form>

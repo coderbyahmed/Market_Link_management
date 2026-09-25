@@ -1,10 +1,12 @@
+import { useState } from "react";
 import { Modal, Form, Input } from "antd";
 import { FaUser, FaEnvelope, FaPhoneAlt, FaUserShield, FaUserCheck } from "react-icons/fa";
-import { showSuccess } from "../../common/feedback/MessageProvider.jsx";
+import { showSuccess, showError } from "../../common/feedback/MessageProvider.jsx";
 import Button from "../../common/Button.jsx";
 
 const AdminProfileInfo = ({ profile, open, onOpen, onClose, onSave }) => {
   const [form] = Form.useForm();
+  const [saving, setSaving] = useState(false);
 
   const handleOpenChange = (visible) => {
     if (visible) {
@@ -16,20 +18,30 @@ const AdminProfileInfo = ({ profile, open, onOpen, onClose, onSave }) => {
     }
   };
 
-  const handleSave = () => {
-    form
-      .validateFields()
-      .then((values) => {
-        onSave({
-          ...profile,
-          name: values.name.trim(),
-          email: values.email.trim(),
-          phone: values.phone.trim(),
-        });
-        onClose();
-        showSuccess("Profile Updated Successfully");
-      })
-      .catch(() => {});
+  const handleSave = async () => {
+    if (saving) return;
+
+    try {
+      const values = await form.validateFields();
+
+      setSaving(true);
+
+      await onSave({
+        name: values.name.trim(),
+        email: values.email.trim(),
+        phone: (values.phone || "").trim(),
+      });
+
+      form.resetFields();
+      onClose();
+      showSuccess("Profile Updated Successfully");
+    } catch (error) {
+      if (error?.message) {
+        showError(error.message);
+      }
+    } finally {
+      setSaving(false);
+    }
   };
 
   const rows = [
@@ -74,21 +86,25 @@ const AdminProfileInfo = ({ profile, open, onOpen, onClose, onSave }) => {
         open={open}
         onCancel={onClose}
         onOk={handleSave}
+        afterOpenChange={handleOpenChange}
         okText="Save Changes"
         cancelText="Cancel"
+        okButtonProps={{ loading: saving }}
         destroyOnHidden
         centered
       >
         <Form
           form={form}
           layout="vertical"
-          afterOpenChange={handleOpenChange}
           className="mt-4"
         >
           <Form.Item
             name="name"
             label="Full Name"
-            rules={[{ required: true, message: "Full name is required" }]}
+            rules={[
+              { required: true, whitespace: true, message: "Please enter your full name" },
+              { min: 2, max: 60, message: "Full name must be between 2 and 60 characters" },
+            ]}
           >
             <Input prefix={<FaUser className="text-stone-400" />} placeholder="Enter full name" />
           </Form.Item>
@@ -96,7 +112,7 @@ const AdminProfileInfo = ({ profile, open, onOpen, onClose, onSave }) => {
             name="email"
             label="Email Address"
             rules={[
-              { required: true, message: "Email address is required" },
+              { required: true, whitespace: true, message: "Please enter your email address" },
               { type: "email", message: "Enter a valid email address" },
             ]}
           >
@@ -108,11 +124,16 @@ const AdminProfileInfo = ({ profile, open, onOpen, onClose, onSave }) => {
           <Form.Item
             name="phone"
             label="Phone Number"
-            rules={[{ required: true, message: "Phone number is required" }]}
+            rules={[
+              {
+                pattern: /^[0-9+\-()\s.]{6,20}$/,
+                message: "Phone number must contain only digits, spaces, and + - ( ) characters",
+              },
+            ]}
           >
             <Input
               prefix={<FaPhoneAlt className="text-stone-400" />}
-              placeholder="Enter phone number"
+              placeholder="Optional phone number"
             />
           </Form.Item>
         </Form>

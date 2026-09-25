@@ -8,7 +8,8 @@ import AlertMessage from "../../components/common/feedback/AlertMessage.jsx";
 import { notifySuccess } from "../../components/common/feedback/NotificationProvider.jsx";
 import { ROLES, roleMeta } from "../../components/auth/roleMeta.js";
 import { validateForgotPassword } from "../../validations/auth.validation.js";
-import { forgotPassword } from "../../services/auth.service.js";
+import { forgotPassword as adminForgotPassword } from "../../services/auth.service.js";
+import { forgotPassword as farmerForgotPassword } from "../../services/farmerAuth.service.js";
 import { saveOtpExpiry, OTP_VALIDITY_MINUTES } from "../../utils/auth.js";
 
 const ForgotPassword = () => {
@@ -17,7 +18,6 @@ const ForgotPassword = () => {
   const meta = roleMeta[role];
 
   const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
   const [alert, setAlert] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -25,50 +25,42 @@ const ForgotPassword = () => {
     return <Navigate to="/404" replace />;
   }
 
-  const isAdminFlow = role === "admin";
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (loading) return;
 
-    if (isAdminFlow) {
-      const { errors, isValid } = validateForgotPassword({ email });
-      if (!isValid) {
-        setAlert(errors.email);
-        return;
-      }
-
-      setLoading(true);
-      setAlert("");
-
-      try {
-        await forgotPassword({ email: email.trim(), role });
-
-        saveOtpExpiry(Date.now() + OTP_VALIDITY_MINUTES * 60 * 1000);
-
-        notifySuccess({
-          message: "OTP Sent Successfully",
-          description:
-            "A verification code has been sent to your registered admin email address. Please check your email and enter the OTP within 5 minutes.",
-        });
-
-        navigate(`/verify-otp/${role}?email=${encodeURIComponent(email.trim())}`, {
-          replace: true,
-        });
-      } catch (submitError) {
-        setAlert(submitError.message);
-      } finally {
-        setLoading(false);
-      }
+    const { errors, isValid } = validateForgotPassword({ email });
+    if (!isValid) {
+      setAlert(errors.email);
       return;
     }
 
-    if (!email.trim()) {
-      setError("Email is required");
-      return;
-    }
     setLoading(true);
-    navigate(`/verify-otp/${role}`);
+    setAlert("");
+
+    try {
+      const sendOtp =
+        role === "farmer"
+          ? farmerForgotPassword
+          : adminForgotPassword;
+
+      await sendOtp({ email: email.trim(), role });
+
+      saveOtpExpiry(Date.now() + OTP_VALIDITY_MINUTES * 60 * 1000);
+
+      notifySuccess({
+        message: "OTP Sent Successfully",
+        description: `A verification code has been sent to your registered ${meta.label} email address. Please check your email and enter the OTP within 5 minutes.`,
+      });
+
+      navigate(`/verify-otp/${role}?email=${encodeURIComponent(email.trim())}`, {
+        replace: true,
+      });
+    } catch (submitError) {
+      setAlert(submitError.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -89,7 +81,7 @@ const ForgotPassword = () => {
         the address below.
       </p>
 
-      {isAdminFlow && alert && (
+      {alert && (
         <div className="mt-6">
           <AlertMessage type="error" message={alert} />
         </div>
@@ -104,10 +96,8 @@ const ForgotPassword = () => {
           value={email}
           onChange={(e) => {
             setEmail(e.target.value);
-            setError("");
             setAlert("");
           }}
-          error={isAdminFlow ? undefined : error}
           autoComplete="email"
         />
         <AntButton

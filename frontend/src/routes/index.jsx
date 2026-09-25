@@ -8,8 +8,12 @@ import Signup from "../pages/auth/Signup.jsx";
 import ForgotPassword from "../pages/auth/ForgotPassword.jsx";
 import VerifyOTP from "../pages/auth/VerifyOTP.jsx";
 import ResetPassword from "../pages/auth/ResetPassword.jsx";
-import AdminDashboard from "../pages/admin/AdminDashboard.jsx";
-import AdminProfile from "../pages/admin/AdminProfile.jsx";
+import AdminDashboard from "../pages/admin/dashboard/AdminDashboard.jsx";
+import AdminProfile from "../pages/admin/profile/AdminProfile.jsx";
+import AdminNotifications from "../pages/admin/notifications/AdminNotifications.jsx";
+import AdminAllUsers from "../pages/admin/users/AdminAllUsers.jsx";
+import AdminFarmers from "../pages/admin/users/AdminFarmers.jsx";
+import AdminCustomers from "../pages/admin/users/AdminCustomers.jsx";
 import FarmerDashboard from "../pages/farmer/FarmerDashboard.jsx";
 import CustomerDashboard from "../pages/customer/CustomerDashboard.jsx";
 import NotFound from "../pages/NotFound.jsx";
@@ -60,8 +64,62 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
-        <Route path="/farmer" element={<FarmerDashboard />} />
-        <Route path="/customer" element={<CustomerDashboard />} />
+        <Route
+          path="/admin/notifications"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminProfileImageProvider>
+                <AdminNotifications />
+              </AdminProfileImageProvider>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminProfileImageProvider>
+                <AdminAllUsers />
+              </AdminProfileImageProvider>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/users/farmers"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminProfileImageProvider>
+                <AdminFarmers />
+              </AdminProfileImageProvider>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/users/customers"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminProfileImageProvider>
+                <AdminCustomers />
+              </AdminProfileImageProvider>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/farmer"
+          element={
+            <ProtectedRoute role="farmer">
+              <FarmerDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/customer"
+          element={
+            <ProtectedRoute role="customer">
+              <CustomerDashboard />
+            </ProtectedRoute>
+          }
+        />
 
         <Route path="/404" element={<NotFound />} />
         <Route path="*" element={<NotFound />} />

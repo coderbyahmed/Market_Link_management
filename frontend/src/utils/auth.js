@@ -31,6 +31,16 @@ const clearAuth = () => {
   localStorage.removeItem(USER_KEY);
 };
 
+const updateStoredUser = (partial) => {
+  const user = getUser();
+
+  if (!user) return null;
+
+  const nextUser = { ...user, ...partial };
+  localStorage.setItem(USER_KEY, JSON.stringify(nextUser));
+  return nextUser;
+};
+
 const saveOtpExpiry = (expiresAt) => {
   sessionStorage.setItem(OTP_EXPIRY_KEY, String(expiresAt));
 };
@@ -69,6 +79,7 @@ export {
   getToken,
   getUser,
   clearAuth,
+  updateStoredUser,
   saveOtpExpiry,
   getOtpExpiry,
   clearOtpExpiry,

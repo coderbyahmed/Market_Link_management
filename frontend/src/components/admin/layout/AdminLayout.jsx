@@ -46,7 +46,7 @@ const AdminLayout = ({ children }) => {
         placement="left"
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
-        width={272}
+        size={272}
         styles={{ body: { padding: 0 } }}
       >
         <AdminSidebar

@@ -1,5 +1,6 @@
 const EMAIL_REGEX = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
 const OTP_REGEX = /^\d{6}$/;
+const PHONE_REGEX = /^[0-9+\-()\s.]{6,20}$/;
 const MIN_PASSWORD_LENGTH = 6;
 const ALLOWED_REGISTER_ROLES = ["farmer", "customer"];
 
@@ -12,6 +13,10 @@ const sendValidationError = (res, message) => {
 };
 
 const validateRegister = (req, res, next) => {
+    if (req.body?.role === "customer") {
+        return validateCustomerRegister(req, res, next);
+    }
+
     const { name, email, password, role, confirmPassword } = req.body;
 
     if (!name || !email || !password || !role) {
@@ -39,6 +44,75 @@ const validateRegister = (req, res, next) => {
             "Invalid role. Only farmer and customer can register"
         );
     }
+
+    next();
+};
+
+const validateCustomerRegister = (req, res, next) => {
+    const { name, email, phone, password, confirmPassword } = req.body;
+
+    if (!name || !email || !phone || !password || !confirmPassword) {
+        return sendValidationError(
+            res,
+            "Full name, email address, phone number, password, and confirm password are required"
+        );
+    }
+
+    if (typeof name !== "string" || !name.trim()) {
+        return sendValidationError(res, "Full name is required");
+    }
+
+    const trimmedName = name.trim();
+
+    if (trimmedName.length < 2 || trimmedName.length > 60) {
+        return sendValidationError(
+            res,
+            "Full name must be between 2 and 60 characters"
+        );
+    }
+
+    if (typeof email !== "string") {
+        return sendValidationError(res, "Please enter a valid email address");
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!EMAIL_REGEX.test(normalizedEmail)) {
+        return sendValidationError(res, "Please enter a valid email address");
+    }
+
+    if (typeof phone !== "string" || !PHONE_REGEX.test(phone.trim())) {
+        return sendValidationError(
+            res,
+            "Please enter a valid phone number"
+        );
+    }
+
+    if (
+        typeof password !== "string" ||
+        password.length < MIN_PASSWORD_LENGTH
+    ) {
+        return sendValidationError(
+            res,
+            `Password must be at least ${MIN_PASSWORD_LENGTH} characters`
+        );
+    }
+
+    if (/\s/.test(password)) {
+        return sendValidationError(res, "Password must not contain spaces");
+    }
+
+    if (typeof confirmPassword !== "string") {
+        return sendValidationError(res, "Please confirm your password");
+    }
+
+    if (confirmPassword !== password) {
+        return sendValidationError(res, "Passwords do not match");
+    }
+
+    req.body.name = trimmedName;
+    req.body.email = normalizedEmail;
+    req.body.phone = phone.trim();
 
     next();
 };
@@ -139,6 +213,7 @@ const validateResetPassword = (req, res, next) => {
 
 export {
     validateRegister,
+    validateCustomerRegister,
     validateLogin,
     validateForgotPassword,
     validateVerifyOtp,

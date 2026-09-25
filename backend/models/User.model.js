@@ -38,6 +38,38 @@ const userSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        isApproved: {
+            type: Boolean,
+            default: true,
+        },
+        farmSpecialization: {
+            type: String,
+            enum: [
+                "",
+                "Vegetables",
+                "Fruits",
+                "Grains",
+                "Dairy",
+                "Livestock",
+                "Organic Farming",
+                "Mixed Farming",
+                "Other",
+            ],
+            default: "",
+        },
+        phone: {
+            type: String,
+            trim: true,
+            default: "",
+        },
+        profileImage: {
+            type: String,
+            default: "",
+        },
+        profileImagePublicId: {
+            type: String,
+            default: "",
+        },
         otp: {
             type: String,
             select: false,

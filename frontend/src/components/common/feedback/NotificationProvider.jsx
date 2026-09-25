@@ -4,7 +4,7 @@ const NOTIFICATION_PLACEMENT = "topRight";
 
 const notify = (type, { message: title, description }) =>
   notification[type]({
-    message: title,
+    title,
     description,
     placement: NOTIFICATION_PLACEMENT,
   });

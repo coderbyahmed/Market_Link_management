@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Modal, Form, Input } from "antd";
 import { FaKey, FaLock } from "react-icons/fa";
-import { showSuccess } from "../../common/feedback/MessageProvider.jsx";
+import { showSuccess, showError } from "../../common/feedback/MessageProvider.jsx";
 import Button from "../../common/Button.jsx";
+import { changeAdminPassword } from "../../../services/adminProfile.service.js";
 
 const AdminSecurity = () => {
   const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [form] = Form.useForm();
 
   const confirmPassword = ({ getFieldValue }) => ({
@@ -17,15 +19,28 @@ const AdminSecurity = () => {
     },
   });
 
-  const handleSave = () => {
-    form
-      .validateFields()
-      .then(() => {
-        form.resetFields();
-        setOpen(false);
-        showSuccess("Password Updated Successfully");
-      })
-      .catch(() => {});
+  const handleSave = async () => {
+    try {
+      const values = await form.validateFields();
+
+      setSaving(true);
+
+      await changeAdminPassword({
+        currentPassword: values.currentPassword,
+        newPassword: values.newPassword,
+        confirmPassword: values.confirmPassword,
+      });
+
+      form.resetFields();
+      setOpen(false);
+      showSuccess("Password Updated Successfully");
+    } catch (error) {
+      if (error?.message) {
+        showError(error.message);
+      }
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -60,6 +75,7 @@ const AdminSecurity = () => {
         onOk={handleSave}
         okText="Update Password"
         cancelText="Cancel"
+        okButtonProps={{ loading: saving }}
         destroyOnHidden
         centered
       >
@@ -67,7 +83,9 @@ const AdminSecurity = () => {
           <Form.Item
             name="currentPassword"
             label="Current Password"
-            rules={[{ required: true, message: "Current password is required" }]}
+            rules={[
+              { required: true, whitespace: true, message: "Please enter your current password" },
+            ]}
           >
             <Input.Password
               prefix={<FaLock className="text-stone-400" />}
@@ -78,8 +96,12 @@ const AdminSecurity = () => {
             name="newPassword"
             label="New Password"
             rules={[
-              { required: true, message: "New password is required" },
+              { required: true, whitespace: true, message: "Please enter a new password" },
               { min: 6, message: "Password must be at least 6 characters" },
+              {
+                pattern: /^\S+$/,
+                message: "Password must not contain spaces",
+              },
             ]}
           >
             <Input.Password
@@ -92,7 +114,7 @@ const AdminSecurity = () => {
             label="Confirm New Password"
             dependencies={["newPassword"]}
             rules={[
-              { required: true, message: "Please confirm the new password" },
+              { required: true, whitespace: true, message: "Please confirm the new password" },
               confirmPassword,
             ]}
           >
