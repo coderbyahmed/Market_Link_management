@@ -9,7 +9,10 @@ import {
   showSuccess,
   showError,
 } from "../../common/feedback/MessageProvider.jsx";
-import { createProduct } from "../../../services/product.service.js";
+import {
+  createProduct,
+  uploadProductImage,
+} from "../../../services/product.service.js";
 
 const AddProductContent = () => {
   const navigate = useNavigate();
@@ -22,8 +25,17 @@ const AddProductContent = () => {
     setSubmitting(true);
 
     try {
-      await createProduct(values);
-      showSuccess("Product added successfully.");
+      const { imageFile, ...rest } = values;
+
+      const imagePayload = imageFile
+        ? await uploadProductImage(imageFile)
+        : { image: rest.image || "", imagePublicId: rest.imagePublicId || "" };
+
+      await createProduct({ ...rest, ...imagePayload });
+
+      showSuccess(
+        "Product added successfully. It is now pending admin review."
+      );
       navigate("/farmer/products");
     } catch (error) {
       showError(error.message || "Unable to add the product");

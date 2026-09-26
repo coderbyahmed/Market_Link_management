@@ -26,7 +26,11 @@ const navItems = [
   {
     label: "Products",
     icon: FaBox,
-    children: ["All Products", "Pending Products", "Approved Products"],
+    children: [
+      { label: "All Products", to: "/admin/products" },
+      { label: "Pending Products", to: "/admin/products/pending" },
+      { label: "Approved Products", to: "/admin/products/approved" },
+    ],
   },
   { label: "Orders", icon: FaClipboardList, soon: true },
   { label: "Categories", icon: FaTags, soon: true },

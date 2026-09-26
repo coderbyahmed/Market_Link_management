@@ -63,6 +63,35 @@ const createAdminNotification = async ({
     return serializeNotification(notification);
 };
 
+const createUserNotification = async ({
+    userId,
+    type = "general",
+    title,
+    message,
+    data = {},
+}) => {
+    if (!mongoose.isValidObjectId(userId)) {
+        console.error("Invalid user recipient provided for notification");
+        return null;
+    }
+
+    const user = await User.findById(userId);
+
+    if (!user || !user.isActive) {
+        return null;
+    }
+
+    const notification = await Notification.create({
+        recipient: userId,
+        type,
+        title,
+        message,
+        data,
+    });
+
+    return serializeNotification(notification);
+};
+
 const getNotifications = async (userId) => {
     const notifications = await Notification.find({ recipient: userId }).sort({
         createdAt: -1,
@@ -134,6 +163,7 @@ const deleteAllNotifications = async (userId) => {
 
 export {
     createAdminNotification,
+    createUserNotification,
     getNotifications,
     getUnreadNotificationCount,
     markNotificationAsRead,

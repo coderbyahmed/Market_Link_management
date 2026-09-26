@@ -1,232 +1,166 @@
-import mockProducts from "../components/farmer/products/data/mockProducts.js";
-import mockProductRequests from "../components/farmer/products/data/mockProductRequests.js";
-import mockWeeklyStock from "../components/farmer/products/data/mockWeeklyStock.js";
-
-/**
- * Frontend-only product service.
- * Every function is async and mirrors the shape of a real API call, so the
- * mock state can later be swapped for Axios requests without touching the UI.
- */
-
-const PRODUCTS_KEY = "marketlink_farmer_products";
-const REQUESTS_KEY = "marketlink_farmer_product_requests";
-const WEEKLY_STOCK_KEY = "marketlink_farmer_weekly_stock";
-
-const LATENCY_MS = 250;
-
-const wait = (ms = LATENCY_MS) =>
-  new Promise((resolve) => setTimeout(resolve, ms));
-
-const clone = (value) => JSON.parse(JSON.stringify(value));
-
-const read = (key, seed) => {
-  try {
-    const raw = localStorage.getItem(key);
-
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) return parsed;
-    }
-  } catch {
-    // corrupted storage falls back to the seed data
-  }
-
-  const seeded = clone(seed);
-  localStorage.setItem(key, JSON.stringify(seeded));
-  return seeded;
-};
-
-const write = (key, value) => {
-  localStorage.setItem(key, JSON.stringify(value));
-  return value;
-};
+import api, { getApiErrorMessage } from "./api.js";
 
 const getProducts = async () => {
-  await wait();
-  return read(PRODUCTS_KEY, mockProducts);
+  try {
+    const response = await api.get("/api/farmer/products");
+    return response.data?.data ?? [];
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error), { cause: error });
+  }
 };
 
-const createProduct = async (input) => {
-  await wait();
-
-  const now = new Date().toISOString();
-  const id = `prd-${Date.now()}`;
-
-  const product = {
-    id,
-    status: "pending",
-    adminRemark: "",
-    createdAt: now,
-    updatedAt: now,
-    ...input,
-  };
-
-  write(PRODUCTS_KEY, [product, ...read(PRODUCTS_KEY, mockProducts)]);
-
-  const request = {
-    id: `req-${Date.now()}`,
-    productId: product.id,
-    productName: product.name,
-    category: product.category,
-    price: product.price,
-    unit: product.unit,
-    type: "New Listing",
-    status: "pending",
-    remark: "",
-    submittedAt: now,
-  };
-
-  write(REQUESTS_KEY, [request, ...read(REQUESTS_KEY, mockProductRequests)]);
-
-  return product;
+const getProduct = async (id) => {
+  try {
+    const response = await api.get(`/api/farmer/products/${id}`);
+    return response.data?.data ?? null;
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error), { cause: error });
+  }
 };
 
-const updateProduct = async (id, input) => {
-  await wait();
-
-  const products = read(PRODUCTS_KEY, mockProducts);
-  const index = products.findIndex((product) => product.id === id);
-
-  if (index === -1) {
-    throw new Error("Product not found.");
+const createProduct = async (values) => {
+  try {
+    const response = await api.post("/api/farmer/products", values);
+    return response.data?.data ?? null;
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error), { cause: error });
   }
+};
 
-  const updated = {
-    ...products[index],
-    ...input,
-    id,
-    updatedAt: new Date().toISOString(),
-  };
-
-  const next = [...products];
-  next[index] = updated;
-  write(PRODUCTS_KEY, next);
-
-  const requests = read(REQUESTS_KEY, mockProductRequests);
-  const linkedIndex = requests.findIndex(
-    (request) => request.productId === id
-  );
-
-  if (linkedIndex !== -1) {
-    const linked = { ...requests[linkedIndex] };
-    linked.productName = updated.name;
-    linked.category = updated.category;
-    linked.price = updated.price;
-    linked.unit = updated.unit;
-
-    const nextRequests = [...requests];
-    nextRequests[linkedIndex] = linked;
-    write(REQUESTS_KEY, nextRequests);
+const updateProduct = async (id, values) => {
+  try {
+    const response = await api.put(`/api/farmer/products/${id}`, values);
+    return response.data?.data ?? null;
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error), { cause: error });
   }
-
-  return updated;
 };
 
 const deleteProduct = async (id) => {
-  await wait();
-
-  write(
-    PRODUCTS_KEY,
-    read(PRODUCTS_KEY, mockProducts).filter((product) => product.id !== id)
-  );
-
-  write(
-    REQUESTS_KEY,
-    read(REQUESTS_KEY, mockProductRequests).filter(
-      (request) => request.productId !== id
-    )
-  );
-
-  return { id };
+  try {
+    await api.delete(`/api/farmer/products/${id}`);
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error), { cause: error });
+  }
 };
 
 const updateAvailability = async (id, availability) => {
-  await wait();
-
-  const products = read(PRODUCTS_KEY, mockProducts);
-  const index = products.findIndex((product) => product.id === id);
-
-  if (index === -1) {
-    throw new Error("Product not found.");
+  try {
+    const response = await api.patch(`/api/farmer/products/${id}/availability`, {
+      availability,
+    });
+    return response.data?.data ?? null;
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error), { cause: error });
   }
-
-  const updated = {
-    ...products[index],
-    availability,
-    updatedAt: new Date().toISOString(),
-  };
-
-  const next = [...products];
-  next[index] = updated;
-  write(PRODUCTS_KEY, next);
-
-  return updated;
 };
 
 const getProductRequests = async () => {
-  await wait();
-  return read(REQUESTS_KEY, mockProductRequests);
+  try {
+    const response = await api.get("/api/farmer/products/requests");
+    return response.data?.data ?? [];
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error), { cause: error });
+  }
 };
 
-const resubmitRequest = async (id) => {
-  await wait();
-
-  const requests = read(REQUESTS_KEY, mockProductRequests);
-  const index = requests.findIndex((request) => request.id === id);
-
-  if (index === -1) {
-    throw new Error("Request not found.");
+const resubmitRequest = async (productId) => {
+  try {
+    const response = await api.patch(`/api/farmer/products/${productId}/resubmit`);
+    return response.data?.data ?? null;
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error), { cause: error });
   }
+};
 
-  const updated = {
-    ...requests[index],
-    status: "pending",
-    remark: "",
-    submittedAt: new Date().toISOString(),
-  };
+const uploadProductImage = async (file) => {
+  try {
+    const formData = new FormData();
+    formData.append("image", file);
 
-  const next = [...requests];
-  next[index] = updated;
-  write(REQUESTS_KEY, next);
-
-  const products = read(PRODUCTS_KEY, mockProducts);
-  const productIndex = products.findIndex(
-    (product) => product.id === updated.productId
-  );
-
-  if (productIndex !== -1) {
-    const nextProducts = [...products];
-    nextProducts[productIndex] = {
-      ...products[productIndex],
-      status: "pending",
-      adminRemark: "",
-      updatedAt: new Date().toISOString(),
-    };
-    write(PRODUCTS_KEY, nextProducts);
+    const response = await api.post("/api/farmer/products/image", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data?.data ?? null;
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error), { cause: error });
   }
-
-  return updated;
 };
 
 const getWeeklyStock = async () => {
-  await wait();
-  return read(WEEKLY_STOCK_KEY, mockWeeklyStock);
+  try {
+    const response = await api.get("/api/farmer/products/weekly-stock");
+    return response.data?.data ?? [];
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error), { cause: error });
+  }
 };
 
-const updateWeeklyStock = async (items) => {
-  await wait();
-  write(WEEKLY_STOCK_KEY, items);
-  return items;
+const addWeeklyStockItem = async (values) => {
+  try {
+    const response = await api.post("/api/farmer/products/weekly-stock", values);
+    return response.data?.data ?? [];
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error), { cause: error });
+  }
+};
+
+const updateWeeklyStockItem = async (id, values) => {
+  try {
+    const response = await api.put(
+      `/api/farmer/products/weekly-stock/${id}`,
+      values
+    );
+    return response.data?.data ?? [];
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error), { cause: error });
+  }
+};
+
+const toggleWeeklyStockItem = async (id, enabled) => {
+  try {
+    const response = await api.patch(
+      `/api/farmer/products/weekly-stock/${id}/toggle`,
+      { enabled }
+    );
+    return response.data?.data ?? [];
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error), { cause: error });
+  }
+};
+
+const removeWeeklyStockItem = async (id) => {
+  try {
+    const response = await api.delete(`/api/farmer/products/weekly-stock/${id}`);
+    return response.data?.data ?? [];
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error), { cause: error });
+  }
+};
+
+const saveWeeklyStock = async (items) => {
+  try {
+    const response = await api.put("/api/farmer/products/weekly-stock", { items });
+    return response.data?.data ?? [];
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error), { cause: error });
+  }
 };
 
 export {
   getProducts,
+  getProduct,
   createProduct,
   updateProduct,
   deleteProduct,
   updateAvailability,
   getProductRequests,
   resubmitRequest,
+  uploadProductImage,
   getWeeklyStock,
-  updateWeeklyStock,
+  addWeeklyStockItem,
+  updateWeeklyStockItem,
+  toggleWeeklyStockItem,
+  removeWeeklyStockItem,
+  saveWeeklyStock,
 };

@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { FaArrowRight, FaLeaf, FaStar, FaCheckCircle } from "react-icons/fa";
 import {
   GiWheat,
@@ -8,6 +9,10 @@ import {
   GiHoneycomb,
 } from "react-icons/gi";
 import Button from "../common/Button.jsx";
+import { getUser } from "../../utils/auth.js";
+
+const customerMarketTarget = () =>
+  getUser() ? "/customer" : "/login/customer";
 
 const heroProducts = [
   { icon: GiWheat, label: "Grains", color: "bg-amber-100 text-amber-700" },
@@ -53,7 +58,7 @@ const Hero = () => {
             >
               Join as a Farmer
             </Button>
-            <Button to="/marketplace" variant="outline" size="lg">
+            <Button to={customerMarketTarget()} variant="outline" size="lg">
               Explore as a Customer
             </Button>
           </div>
@@ -120,8 +125,8 @@ const Hero = () => {
             </div>
           </div>
 
-          <a
-            href="/#marketplace"
+          <Link
+            to={customerMarketTarget()}
             className="absolute -bottom-6 -left-4 hidden items-center gap-2 rounded-2xl border border-stone-100 bg-white px-5 py-4 shadow-lg transition-transform hover:-translate-y-1 sm:flex"
           >
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-100 text-brand-700">
@@ -134,7 +139,7 @@ const Hero = () => {
               <p className="text-xs text-stone-500">Browse the harvest</p>
             </div>
             <FaArrowRight className="h-4 w-4 text-brand-600" />
-          </a>
+          </Link>
         </div>
       </div>
     </section>

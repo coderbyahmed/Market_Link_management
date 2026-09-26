@@ -15,16 +15,17 @@ const ProductForm = ({
   actions = null,
 }) => {
   const [image, setImage] = useState(initialValues.image || "");
+  const [imageFile, setImageFile] = useState(null);
   const [imageError, setImageError] = useState("");
 
   const handleFinish = (values) => {
-    if (!image) {
+    if (!image && !imageFile) {
       setImageError("Please select a product image");
       return;
     }
 
     setImageError("");
-    onSubmit({ ...values, image });
+    onSubmit({ ...values, imageFile });
   };
 
   const handleFile = (file) => {
@@ -38,6 +39,8 @@ const ProductForm = ({
       return Upload.LIST_IGNORE;
     }
 
+    setImageFile(file);
+
     const reader = new FileReader();
     reader.onload = () => {
       setImage(reader.result);
@@ -46,6 +49,12 @@ const ProductForm = ({
     reader.readAsDataURL(file);
 
     return false;
+  };
+
+  const handleRemove = () => {
+    setImage("");
+    setImageFile(null);
+    setImageError("");
   };
 
   return (
@@ -79,7 +88,7 @@ const ProductForm = ({
             </div>
             <button
               type="button"
-              onClick={() => setImage("")}
+              onClick={handleRemove}
               disabled={submitting}
               className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-red-300 px-3 py-1.5 text-xs font-semibold text-red-600 transition-colors hover:bg-red-50 disabled:opacity-60 dark:border-red-900 dark:hover:bg-red-950"
             >
@@ -192,19 +201,12 @@ const ProductForm = ({
         </Form.Item>
       </div>
 
-      <Form.Item
-        label="Description"
-        name="description"
-        rules={[
-          { required: true, whitespace: true, message: "Please enter a description" },
-          { min: 10, message: "Description must be at least 10 characters" },
-        ]}
-      >
+      <Form.Item label="Description" name="description">
         <Input.TextArea
           rows={4}
           maxLength={500}
           showCount
-          placeholder="Describe quality, origin, packing and delivery details..."
+          placeholder="Describe quality, origin, packing and delivery details (optional)..."
         />
       </Form.Item>
 

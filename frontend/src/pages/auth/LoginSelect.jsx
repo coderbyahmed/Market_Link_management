@@ -1,20 +1,10 @@
-import { FaUserShield, FaShoppingBasket } from "react-icons/fa";
+import { FaShoppingBasket } from "react-icons/fa";
 import { GiFarmTractor } from "react-icons/gi";
 import Header from "../../components/common/Header.jsx";
 import Footer from "../../components/common/Footer.jsx";
 import RoleCards from "../../components/auth/RoleCards.jsx";
 
 const options = [
-  {
-    role: "Admin",
-    description: "Manage and monitor the MarketLink platform.",
-    actionLabel: "Continue as Admin",
-    to: "/login/admin",
-    icon: FaUserShield,
-    accent: "bg-stone-100 text-stone-700",
-    badge: "bg-stone-900 text-white",
-    hover: "hover:border-stone-400",
-  },
   {
     role: "Farmer",
     description: "Create your farm profile and connect with customers.",

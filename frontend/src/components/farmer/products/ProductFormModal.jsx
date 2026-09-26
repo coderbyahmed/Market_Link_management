@@ -36,6 +36,7 @@ const ProductFormModal = ({
             availability: product.availability,
             description: product.description,
             image: product.image,
+            imagePublicId: product.imagePublicId,
           }}
           submitting={submitting}
           onSubmit={(values) => onSubmit(values)}

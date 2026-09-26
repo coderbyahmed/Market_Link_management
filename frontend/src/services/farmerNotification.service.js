@@ -1,65 +1,54 @@
-import farmerNotificationsData from "../components/farmer/notifications/data/farmerNotificationsData.js";
+import api, { getApiErrorMessage } from "./api.js";
 
-const STORAGE_KEY = "marketlink_farmer_notifications";
-
-const seedNotifications = () =>
-  farmerNotificationsData.map((notification) => ({ ...notification }));
-
-const readAll = () => {
+const getNotifications = async () => {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) return parsed;
-    }
-  } catch {
-    // fall through to a fresh seed
+    const response = await api.get("/api/farmer/notifications");
+    return response.data?.data ?? [];
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error), { cause: error });
   }
-
-  const seeded = seedNotifications();
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
-  return seeded;
 };
 
-const persist = (notifications) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(notifications));
-  return notifications;
+const getUnreadCount = async () => {
+  try {
+    const response = await api.get("/api/farmer/notifications/unread-count");
+    return response.data?.data ?? 0;
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error), { cause: error });
+  }
 };
-
-const getNotifications = async () => readAll();
-
-const getUnreadCount = async () =>
-  readAll().filter((notification) => !notification.isRead).length;
 
 const markAsRead = async (id) => {
-  const next = readAll().map((notification) =>
-    notification.id === id ? { ...notification, isRead: true } : notification
-  );
-
-  persist(next);
-  return next.find((notification) => notification.id === id) ?? null;
+  try {
+    const response = await api.patch(`/api/farmer/notifications/${id}/read`);
+    return response.data?.data ?? null;
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error), { cause: error });
+  }
 };
 
 const markAllAsRead = async () => {
-  const next = readAll().map((notification) => ({
-    ...notification,
-    isRead: true,
-  }));
-
-  persist(next);
+  try {
+    await api.patch("/api/farmer/notifications/read-all");
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error), { cause: error });
+  }
 };
 
 const deleteNotification = async (id) => {
-  const next = readAll().filter(
-    (notification) => notification.id !== id
-  );
-
-  persist(next);
+  try {
+    await api.delete(`/api/farmer/notifications/${id}`);
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error), { cause: error });
+  }
 };
 
 const deleteAllNotifications = async () => {
-  localStorage.removeItem(STORAGE_KEY);
+  try {
+    await api.delete("/api/farmer/notifications");
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error), { cause: error });
+  }
 };
 
 export {

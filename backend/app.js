@@ -5,6 +5,9 @@ import farmerAuthRoutes from "./routes/farmerAuth.routes.js";
 import adminProfileRoutes from "./routes/adminProfile.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
 import userManagementRoutes from "./routes/userManagement.routes.js";
+import productRoutes from "./routes/product.routes.js";
+import adminProductRoutes from "./routes/adminProduct.routes.js";
+import farmerNotificationRoutes from "./routes/farmerNotification.routes.js";
 import { notFound, errorHandler } from "./middleware/error.middleware.js";
 
 const app = express();
@@ -17,6 +20,9 @@ app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminProfileRoutes);
 app.use("/api/admin", notificationRoutes);
 app.use("/api/admin", userManagementRoutes);
+app.use("/api/admin", adminProductRoutes);
+app.use("/api/farmer", productRoutes);
+app.use("/api/farmer", farmerNotificationRoutes);
 
 app.get("/", (req, res) => {
     res.status(200).json({

@@ -1,19 +1,9 @@
-import { FaArrowRight, FaUserShield, FaShoppingBasket } from "react-icons/fa";
+import { FaArrowRight, FaShoppingBasket } from "react-icons/fa";
 import { GiFarmTractor } from "react-icons/gi";
 import SectionHeading from "../common/SectionHeading.jsx";
 import Button from "../common/Button.jsx";
 
 const roles = [
-  {
-    role: "Admin",
-    description: "Manage and monitor the MarketLink platform.",
-    buttonLabel: "Continue as Admin",
-    to: "/login/admin",
-    icon: FaUserShield,
-    accent: "bg-stone-100 text-stone-700",
-    badge: "bg-stone-900 text-white",
-    hover: "hover:border-stone-400",
-  },
   {
     role: "Farmer",
     description: "Create your farm profile and connect with customers.",
@@ -43,10 +33,10 @@ const RoleSelection = () => {
         <SectionHeading
           eyebrow="Pick Your Path"
           title="Choose Your MarketLink Experience"
-          description="Whether you manage the platform, grow the harvest, or enjoy fresh food — there's a place for you."
+          description="Whether you grow the harvest or enjoy fresh food — there's a place for you."
         />
 
-        <div className="mt-14 grid gap-6 md:grid-cols-3">
+        <div className="mx-auto mt-14 grid max-w-4xl gap-6 md:grid-cols-2">
           {roles.map(({ role, description, buttonLabel, to, icon: Icon, accent, badge, hover }) => (
             <div
               key={role}

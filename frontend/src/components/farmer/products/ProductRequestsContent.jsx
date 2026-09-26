@@ -11,7 +11,6 @@ import {
 } from "../../common/feedback/MessageProvider.jsx";
 import {
   getProductRequests,
-  getProducts,
   resubmitRequest,
 } from "../../../services/product.service.js";
 import {
@@ -45,7 +44,6 @@ const FILTER_FIELDS = [
 
 const ProductRequestsContent = () => {
   const [requests, setRequests] = useState([]);
-  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
@@ -56,12 +54,8 @@ const ProductRequestsContent = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const [requestList, productList] = await Promise.all([
-          getProductRequests(),
-          getProducts(),
-        ]);
+        const requestList = await getProductRequests();
         setRequests(requestList);
-        setProducts(productList);
       } catch (error) {
         showError(error.message || "Unable to load product requests");
       } finally {
@@ -117,23 +111,45 @@ const ProductRequestsContent = () => {
     setResubmitting(true);
 
     try {
-      const updated = await resubmitRequest(confirmResubmit.id);
-      setRequests((prev) =>
-        prev.map((item) => (item.id === updated.id ? updated : item))
+      const updated = await resubmitRequest(confirmResubmit.productId);
+
+      setRequests((prev) => {
+        const findExisting = (list) =>
+          list.map((item) =>
+            item.id === updated.id
+              ? {
+                  ...item,
+                  status: updated.status,
+                  remark: "",
+                  updatedAt: new Date().toISOString(),
+                }
+              : item
+          );
+
+        const next = findExisting(prev);
+
+        const stillPresent = next.some((item) => item.id === updated.id);
+
+        return stillPresent ? next : [updated, ...next];
+      });
+
+      setSelected((prev) =>
+        prev && prev.id === updated.id
+          ? {
+              ...prev,
+              status: updated.status,
+              remark: "",
+            }
+          : prev
       );
-      setSelected((prev) => (prev && prev.id === updated.id ? updated : prev));
       setConfirmResubmit(null);
-      showSuccess("Request action completed.");
+      showSuccess("Product resubmitted for review successfully.");
     } catch (error) {
       showError(error.message || "Unable to resubmit the request");
     } finally {
       setResubmitting(false);
     }
   };
-
-  const selectedProduct = selected
-    ? products.find((product) => product.id === selected.productId)
-    : null;
 
   return (
     <div className="space-y-6">
@@ -170,7 +186,6 @@ const ProductRequestsContent = () => {
 
       <ProductRequestModal
         request={selected}
-        product={selectedProduct}
         open={Boolean(selected)}
         resubmitting={resubmitting}
         onClose={() => setSelected(null)}

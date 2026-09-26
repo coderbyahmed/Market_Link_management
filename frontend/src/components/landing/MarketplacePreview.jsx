@@ -9,6 +9,10 @@ import {
 } from "react-icons/gi";
 import SectionHeading from "../common/SectionHeading.jsx";
 import Button from "../common/Button.jsx";
+import { getUser } from "../../utils/auth.js";
+
+const customerMarketTarget = () =>
+  getUser() ? "/customer" : "/login/customer";
 
 const categories = [
   { icon: GiCarrot, label: "Vegetables", color: "bg-green-100 text-green-700", count: "320+ listings" },
@@ -115,7 +119,7 @@ const MarketplacePreview = () => {
         </div>
 
         <div className="mt-12 text-center">
-          <Button to="/marketplace" variant="primary" size="lg">
+          <Button to={customerMarketTarget()} variant="primary" size="lg">
             Explore the Marketplace
             <FaArrowRight className="h-4 w-4" />
           </Button>

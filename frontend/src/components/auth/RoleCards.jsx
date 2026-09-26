@@ -8,7 +8,7 @@ const RoleCards = ({ eyebrow, title, description, options }) => {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading eyebrow={eyebrow} title={title} description={description} />
 
-        <div className="mt-14 grid gap-6 md:grid-cols-3">
+        <div className="mx-auto mt-14 grid max-w-4xl gap-6 md:grid-cols-2">
           {options.map(
             ({ role, description: cardDescription, actionLabel, to, icon: Icon, accent, badge, hover }) => (
               <div

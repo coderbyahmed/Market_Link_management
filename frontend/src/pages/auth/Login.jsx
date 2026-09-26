@@ -42,7 +42,7 @@ const Login = () => {
     }
   }, [role, location, navigate, meta]);
 
-  if (!ROLES.includes(role)) {
+  if (role === "admin" || !ROLES.includes(role)) {
     return <Navigate to="/404" replace />;
   }
 

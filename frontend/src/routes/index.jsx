@@ -8,12 +8,16 @@ import Signup from "../pages/auth/Signup.jsx";
 import ForgotPassword from "../pages/auth/ForgotPassword.jsx";
 import VerifyOTP from "../pages/auth/VerifyOTP.jsx";
 import ResetPassword from "../pages/auth/ResetPassword.jsx";
+import AdminLogin from "../pages/auth/AdminLogin.jsx";
 import AdminDashboard from "../pages/admin/dashboard/AdminDashboard.jsx";
 import AdminProfile from "../pages/admin/profile/AdminProfile.jsx";
 import AdminNotifications from "../pages/admin/notifications/AdminNotifications.jsx";
 import AdminAllUsers from "../pages/admin/users/AdminAllUsers.jsx";
 import AdminFarmers from "../pages/admin/users/AdminFarmers.jsx";
 import AdminCustomers from "../pages/admin/users/AdminCustomers.jsx";
+import AdminAllProducts from "../pages/admin/products/AdminAllProducts.jsx";
+import AdminPendingProducts from "../pages/admin/products/AdminPendingProducts.jsx";
+import AdminApprovedProducts from "../pages/admin/products/AdminApprovedProducts.jsx";
 import FarmerDashboard from "../pages/farmer/FarmerDashboard.jsx";
 import FarmerProfile from "../pages/farmer/FarmerProfile.jsx";
 import FarmerNotifications from "../pages/farmer/FarmerNotifications.jsx";
@@ -26,7 +30,18 @@ import FarmerCropListings from "../pages/farmer/CropListings.jsx";
 import FarmerReviews from "../pages/farmer/Reviews.jsx";
 import FarmerReports from "../pages/farmer/Reports.jsx";
 import FarmerSettings from "../pages/farmer/Settings.jsx";
-import CustomerDashboard from "../pages/customer/CustomerDashboard.jsx";
+import CustomerLayout from "../components/customer/layout/CustomerLayout.jsx";
+import CustomerHome from "../pages/customer/Home.jsx";
+import CustomerProducts from "../pages/customer/Products.jsx";
+import CustomerProductDetails from "../pages/customer/ProductDetails.jsx";
+import CustomerCategories from "../pages/customer/Categories.jsx";
+import CustomerCart from "../pages/customer/Cart.jsx";
+import CustomerCheckout from "../pages/customer/Checkout.jsx";
+import CustomerOrders from "../pages/customer/Orders.jsx";
+import CustomerOrderDetails from "../pages/customer/OrderDetails.jsx";
+import CustomerReviews from "../pages/customer/Reviews.jsx";
+import CustomerWishlist from "../pages/customer/Wishlist.jsx";
+import CustomerProfile from "../pages/customer/Profile.jsx";
 import NotFound from "../pages/NotFound.jsx";
 import ProtectedRoute from "../components/common/ProtectedRoute.jsx";
 import { AdminProfileImageProvider } from "../context/AdminProfileImageProvider.jsx";
@@ -47,6 +62,8 @@ const AppRoutes = () => {
         <Route path="/forgot-password/:role" element={<ForgotPassword />} />
         <Route path="/verify-otp/:role" element={<VerifyOTP />} />
         <Route path="/reset-password/:role" element={<ResetPassword />} />
+
+        <Route path="/admin/login/:adminAccessId" element={<AdminLogin />} />
 
         <Route
           path="/admin"
@@ -112,6 +129,36 @@ const AppRoutes = () => {
             <ProtectedRoute role="admin">
               <AdminProfileImageProvider>
                 <AdminCustomers />
+              </AdminProfileImageProvider>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/products"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminProfileImageProvider>
+                <AdminAllProducts />
+              </AdminProfileImageProvider>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/products/pending"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminProfileImageProvider>
+                <AdminPendingProducts />
+              </AdminProfileImageProvider>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/products/approved"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminProfileImageProvider>
+                <AdminApprovedProducts />
               </AdminProfileImageProvider>
             </ProtectedRoute>
           }
@@ -248,10 +295,22 @@ const AppRoutes = () => {
           path="/customer"
           element={
             <ProtectedRoute role="customer">
-              <CustomerDashboard />
+              <CustomerLayout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<CustomerHome />} />
+          <Route path="products" element={<CustomerProducts />} />
+          <Route path="products/:productId" element={<CustomerProductDetails />} />
+          <Route path="categories" element={<CustomerCategories />} />
+          <Route path="cart" element={<CustomerCart />} />
+          <Route path="checkout" element={<CustomerCheckout />} />
+          <Route path="orders" element={<CustomerOrders />} />
+          <Route path="orders/:orderId" element={<CustomerOrderDetails />} />
+          <Route path="reviews" element={<CustomerReviews />} />
+          <Route path="wishlist" element={<CustomerWishlist />} />
+          <Route path="profile" element={<CustomerProfile />} />
+        </Route>
 
         <Route path="/404" element={<NotFound />} />
         <Route path="*" element={<NotFound />} />

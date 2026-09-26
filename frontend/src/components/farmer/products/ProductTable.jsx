@@ -4,7 +4,6 @@ import ProductImage from "./ProductImage.jsx";
 import AvailabilityBadge from "./AvailabilityBadge.jsx";
 import StatusBadge from "./StatusBadge.jsx";
 import Button from "../../common/Button.jsx";
-import { formatShortDate } from "../../../utils/date.js";
 import { categoryLabel, unitLabel } from "./data/productOptions.js";
 
 const ProductTable = ({
@@ -22,13 +21,13 @@ const ProductTable = ({
     {
       title: "Product",
       key: "product",
-      width: 280,
+      width: 220,
       render: (_, product) => (
         <div className="flex items-center gap-3">
           <ProductImage
             src={product.image}
             name={product.name}
-            className="h-12 w-12"
+            className="h-11 w-11"
           />
           <div className="min-w-0">
             <p className="truncate font-medium text-stone-800 dark:text-stone-200">
@@ -44,7 +43,8 @@ const ProductTable = ({
     {
       title: "Category",
       key: "category",
-      width: 130,
+      width: 110,
+      responsive: ["md"],
       render: (_, product) => (
         <Tag className="!m-0 !rounded-full">{categoryLabel(product.category)}</Tag>
       ),
@@ -52,7 +52,7 @@ const ProductTable = ({
     {
       title: "Price",
       key: "price",
-      width: 130,
+      width: 105,
       render: (_, product) => (
         <span className="whitespace-nowrap font-medium text-stone-700 dark:text-stone-300">
           Rs. {Number(product.price).toLocaleString()}
@@ -66,7 +66,7 @@ const ProductTable = ({
     {
       title: "Stock",
       key: "stock",
-      width: 110,
+      width: 100,
       render: (_, product) => (
         <span
           className={
@@ -82,7 +82,7 @@ const ProductTable = ({
     {
       title: "Availability",
       key: "availability",
-      width: 210,
+      width: 175,
       render: (_, product) => (
         <AvailabilityBadge
           availability={product.availability}
@@ -93,26 +93,17 @@ const ProductTable = ({
     {
       title: "Status",
       key: "status",
-      width: 120,
+      width: 100,
+      responsive: ["sm"],
       render: (_, product) => <StatusBadge status={product.status} />,
-    },
-    {
-      title: "Updated",
-      key: "updatedAt",
-      width: 130,
-      render: (_, product) => (
-        <span className="whitespace-nowrap text-sm text-stone-500 dark:text-stone-400">
-          {formatShortDate(product.updatedAt)}
-        </span>
-      ),
     },
     {
       title: "Actions",
       key: "actions",
+      width: 170,
       align: "right",
-      width: 230,
       render: (_, product) => (
-        <div className="flex flex-wrap items-center justify-end gap-2">
+        <div className="flex justify-end gap-2">
           <Button size="sm" variant="outline" onClick={() => onView(product)}>
             View
           </Button>
@@ -155,7 +146,7 @@ const ProductTable = ({
         columns={columns}
         loading={loading}
         locale={{ emptyText: emptyNode }}
-        scroll={{ x: 1180 }}
+        scroll={{ x: 760 }}
         pagination={{ pageSize: 8, showSizeChanger: false }}
       />
     </div>

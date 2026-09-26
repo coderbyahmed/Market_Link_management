@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FaPlus, FaSyncAlt } from "react-icons/fa";
 import PageHeader from "../common/PageHeader.jsx";
 import ProductStats from "./ProductStats.jsx";
-import SearchInput from "../common/SearchInput.jsx";
-import FilterBar from "../common/FilterBar.jsx";
+import ProductFilters from "./ProductFilters.jsx";
 import ProductTable from "./ProductTable.jsx";
 import ProductDetailsModal from "./ProductDetailsModal.jsx";
 import ProductFormModal from "./ProductFormModal.jsx";
@@ -19,6 +18,7 @@ import {
   updateProduct,
   deleteProduct,
   updateAvailability,
+  uploadProductImage,
 } from "../../../services/product.service.js";
 import {
   CATEGORIES,
@@ -175,7 +175,20 @@ const AllProductsContent = () => {
     setSaving(true);
 
     try {
-      const updated = await updateProduct(editProduct.id, values);
+      const { imageFile, ...rest } = values;
+
+      const imagePayload = imageFile
+        ? await uploadProductImage(imageFile)
+        : {
+            image: editProduct.image || "",
+            imagePublicId: editProduct.imagePublicId || "",
+          };
+
+      const updated = await updateProduct(editProduct.id, {
+        ...rest,
+        ...imagePayload,
+      });
+
       setProducts((prev) =>
         prev.map((item) => (item.id === updated.id ? updated : item))
       );
@@ -241,13 +254,14 @@ const AllProductsContent = () => {
         pendingRequests={pendingRequests}
       />
 
-      <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-        <SearchInput value={search} onChange={setSearch} />
-        <FilterBar
+      <div className="flex flex-col gap-3">
+        <ProductFilters
           fields={FILTER_FIELDS}
           values={filters}
           onChange={setFilter}
           onReset={resetFilters}
+          searchValue={search}
+          onSearchChange={setSearch}
           hasActiveFilters={hasActiveFilters}
         />
       </div>

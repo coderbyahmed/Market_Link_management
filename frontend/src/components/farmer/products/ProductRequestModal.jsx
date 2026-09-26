@@ -11,7 +11,6 @@ import {
 
 const ProductRequestModal = ({
   request,
-  product,
   open,
   onClose,
   onResubmit,
@@ -44,7 +43,7 @@ const ProductRequestModal = ({
       <div className="mt-4">
         <div className="flex flex-col gap-4 sm:flex-row">
           <ProductImage
-            src={product?.image || ""}
+            src={request.image || ""}
             name={request.productName}
             className="h-32 w-full sm:h-28 sm:w-40"
           />
@@ -58,9 +57,9 @@ const ProductRequestModal = ({
                 {request.type}
               </span>
             </div>
-            {product?.description && (
+            {request.description && (
               <p className="mt-3 text-sm leading-relaxed text-stone-600 dark:text-stone-300">
-                {product.description}
+                {request.description}
               </p>
             )}
           </div>

@@ -12,13 +12,14 @@ import {
 } from "../../common/feedback/MessageProvider.jsx";
 import {
   getWeeklyStock,
-  updateWeeklyStock,
   getProducts,
+  addWeeklyStockItem,
+  updateWeeklyStockItem,
+  toggleWeeklyStockItem,
+  removeWeeklyStockItem,
+  saveWeeklyStock,
 } from "../../../services/product.service.js";
 import { WEEK_DAYS } from "./data/productOptions.js";
-
-const newItemId = () =>
-  `wks-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
 const WeeklyStockContent = () => {
   const [items, setItems] = useState([]);
@@ -48,46 +49,36 @@ const WeeklyStockContent = () => {
     load();
   }, []);
 
-  const persist = async (next) => {
-    setItems(next);
-
-    try {
-      await updateWeeklyStock(next);
-    } catch (error) {
-      showError(error.message || "Unable to save weekly stock");
-    }
-  };
-
   const openAdd = (day) => setModal({ open: true, item: null, day });
-  const openEdit = (item) =>
-    setModal({ open: true, item, day: item.day || "Monday" });
+  const openEdit = (item) => setModal({ open: true, item, day: item.day || "Monday" });
   const closeModal = () => setModal((prev) => ({ ...prev, open: false }));
 
   const handleSubmit = async (values) => {
     if (saving) return;
 
+    if (!modal.item) {
+      const duplicate = items.some(
+        (entry) => entry.day === values.day && entry.productId === values.productId
+      );
+
+      if (duplicate) {
+        showError(
+          "This product is already scheduled for this day. Edit the existing entry instead."
+        );
+        return;
+      }
+    }
+
     setSaving(true);
 
     try {
       if (modal.item) {
-        const next = items.map((item) =>
-          item.id === modal.item.id
-            ? { ...item, ...values, productName: values.productName }
-            : item
-        );
-        await persist(next);
+        const next = await updateWeeklyStockItem(modal.item.id, values);
+        setItems(next);
         showSuccess("Weekly stock updated successfully.");
       } else {
-        const next = [
-          ...items,
-          {
-            id: newItemId(),
-            productName: values.productName,
-            enabled: true,
-            ...values,
-          },
-        ];
-        await persist(next);
+        const next = await addWeeklyStockItem(values);
+        setItems(next);
         showSuccess("Product added to weekly stock.");
       }
 
@@ -100,19 +91,25 @@ const WeeklyStockContent = () => {
   };
 
   const handleToggle = async (item) => {
-    await persist(
-      items.map((entry) =>
-        entry.id === item.id ? { ...entry, enabled: !entry.enabled } : entry
-      )
-    );
+    try {
+      const next = await toggleWeeklyStockItem(item.id, !item.enabled);
+      setItems(next);
+    } catch (error) {
+      showError(error.message || "Unable to update the stock item");
+    }
   };
 
   const handleRemove = async () => {
     if (!removeTarget) return;
 
-    await persist(items.filter((item) => item.id !== removeTarget.id));
-    setRemoveTarget(null);
-    showSuccess("Weekly stock item removed.");
+    try {
+      const next = await removeWeeklyStockItem(removeTarget.id);
+      setItems(next);
+      setRemoveTarget(null);
+      showSuccess("Weekly stock item removed.");
+    } catch (error) {
+      showError(error.message || "Unable to remove the stock item");
+    }
   };
 
   const handleSaveTemplate = async () => {
@@ -121,7 +118,8 @@ const WeeklyStockContent = () => {
     setSavingTemplate(true);
 
     try {
-      await updateWeeklyStock(items);
+      const next = await saveWeeklyStock(items);
+      setItems(next);
       showSuccess("Weekly stock updated successfully.");
     } catch (error) {
       showError(error.message || "Unable to save the weekly template");
