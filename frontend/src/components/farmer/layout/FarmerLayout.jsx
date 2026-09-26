@@ -2,8 +2,11 @@ import { useEffect, useState } from "react";
 import { Drawer } from "antd";
 import FarmerSidebar from "./FarmerSidebar.jsx";
 import FarmerHeader from "./FarmerHeader.jsx";
+import { useSessionGuard } from "../../../hooks/useSessionGuard.js";
 
 const FarmerLayout = ({ children }) => {
+  // Session guard: destroys session on browser back/forward
+  useSessionGuard({ loginPath: "/login/farmer" });
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [theme, setTheme] = useState(

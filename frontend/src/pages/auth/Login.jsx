@@ -12,6 +12,7 @@ import {
 } from "../../services/auth.service.js";
 import { login as farmerLogin } from "../../services/farmerAuth.service.js";
 import { saveAuth } from "../../utils/auth.js";
+import { initSession } from "../../hooks/useSessionGuard.js";
 import { showError, showSuccess } from "../../components/common/feedback/MessageProvider.jsx";
 import { notifySuccess } from "../../components/common/feedback/NotificationProvider.jsx";
 import AlertMessage from "../../components/common/feedback/AlertMessage.jsx";
@@ -82,6 +83,7 @@ const Login = () => {
       }
 
       saveAuth(session);
+      initSession();
       setPassword("");
 
       if (role === "customer") {

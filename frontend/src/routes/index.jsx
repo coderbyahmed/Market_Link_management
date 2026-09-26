@@ -42,6 +42,8 @@ import CustomerOrderDetails from "../pages/customer/OrderDetails.jsx";
 import CustomerReviews from "../pages/customer/Reviews.jsx";
 import CustomerWishlist from "../pages/customer/Wishlist.jsx";
 import CustomerProfile from "../pages/customer/Profile.jsx";
+import CustomerAbout from "../pages/customer/About.jsx";
+import CustomerContact from "../pages/customer/Contact.jsx";
 import NotFound from "../pages/NotFound.jsx";
 import ProtectedRoute from "../components/common/ProtectedRoute.jsx";
 import { AdminProfileImageProvider } from "../context/AdminProfileImageProvider.jsx";
@@ -310,6 +312,8 @@ const AppRoutes = () => {
           <Route path="reviews" element={<CustomerReviews />} />
           <Route path="wishlist" element={<CustomerWishlist />} />
           <Route path="profile" element={<CustomerProfile />} />
+          <Route path="about" element={<CustomerAbout />} />
+          <Route path="contact" element={<CustomerContact />} />
         </Route>
 
         <Route path="/404" element={<NotFound />} />

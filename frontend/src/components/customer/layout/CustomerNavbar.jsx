@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Badge, Avatar, Dropdown, Drawer } from "antd";
 import {
-  FaSearch,
   FaBars,
   FaShoppingCart,
   FaHeart,
@@ -10,6 +9,8 @@ import {
   FaClipboardList,
   FaStar,
   FaSignOutAlt,
+  FaInfoCircle,
+  FaEnvelope,
 } from "react-icons/fa";
 import { HiOutlineHome } from "react-icons/hi";
 import { GiBasket } from "react-icons/gi";
@@ -25,6 +26,8 @@ const navLinks = [
   { label: "Marketplace", to: "/customer/products", icon: GiBasket },
   { label: "Categories", to: "/customer/categories", icon: GiBasket },
   { label: "Orders", to: "/customer/orders", icon: FaClipboardList },
+  { label: "About", to: "/customer/about", icon: FaInfoCircle },
+  { label: "Contact", to: "/customer/contact", icon: FaEnvelope },
 ];
 
 const profileMenuItems = [
@@ -41,7 +44,6 @@ const CustomerNavbar = () => {
   const wishlist = useWishlistStore();
   const logout = useLogout("customer");
 
-  const [search, setSearch] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profile, setProfile] = useState(null);
 
@@ -50,13 +52,6 @@ const CustomerNavbar = () => {
       .then(setProfile)
       .catch(() => {});
   }, []);
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    const term = search.trim();
-    setMobileOpen(false);
-    navigate(term ? `/customer/products?q=${encodeURIComponent(term)}` : "/customer/products");
-  };
 
   const handleProfileMenu = ({ key }) => {
     setMobileOpen(false);
@@ -85,8 +80,8 @@ const CustomerNavbar = () => {
   const avatarInitial = (profile?.name || "C").charAt(0).toUpperCase();
 
   return (
-    <header className="sticky top-0 z-40 border-b border-stone-200/80 bg-white/90 backdrop-blur-md">
-      <nav className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-40 border-b border-stone-200/80 bg-white/95 backdrop-blur-sm">
+      <nav className="mx-auto flex h-16 max-w-7xl items-center px-4 sm:px-6 lg:px-8">
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
@@ -96,9 +91,11 @@ const CustomerNavbar = () => {
           <FaBars className="h-5 w-5" />
         </button>
 
-        <Logo to="/customer" />
+        {/* Logo - Left */}
+        <Logo to="/customer" className="flex-shrink-0" />
 
-        <div className="ml-4 hidden items-center gap-1 lg:flex">
+        {/* Nav Links - Center */}
+        <div className="hidden lg:flex flex-1 justify-center items-center gap-1 mx-4">
           {navLinks.map((link) => (
             <NavLink key={link.to} to={link.to} className={navLinkClass} end={link.to === "/customer"}>
               {link.label}
@@ -106,20 +103,8 @@ const CustomerNavbar = () => {
           ))}
         </div>
 
-        <form onSubmit={handleSearch} className="ml-auto hidden max-w-xs flex-1 items-center md:flex">
-          <label className="relative block w-full">
-            <FaSearch className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-400" />
-            <input
-              type="search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search products, farmers..."
-              className="w-full rounded-full border border-stone-200 bg-stone-50 py-2 pl-9 pr-4 text-sm text-stone-700 outline-none transition-colors focus:border-brand-400 focus:bg-white"
-            />
-          </label>
-        </form>
-
-        <div className="ml-auto flex items-center gap-1.5 md:ml-2">
+        {/* Icons - Right */}
+        <div className="flex items-center gap-1.5 flex-shrink-0">
           <Link
             to="/customer/wishlist"
             aria-label="Wishlist"
@@ -148,7 +133,7 @@ const CustomerNavbar = () => {
             <button
               type="button"
               aria-label="Profile menu"
-              className="ml-1 flex items-center gap-2 rounded-full p-1 transition-colors hover:bg-stone-100"
+              className="flex items-center gap-2 rounded-full p-1 transition-colors hover:bg-stone-100"
             >
               <Avatar size={36} src={profile?.image || undefined} className="!bg-brand-700">
                 {avatarInitial}
@@ -169,19 +154,6 @@ const CustomerNavbar = () => {
           <div className="flex items-center justify-between border-b border-stone-200 px-5 py-4">
             <Logo to="/customer" />
           </div>
-
-          <form onSubmit={handleSearch} className="border-b border-stone-100 px-4 py-4">
-            <label className="relative block w-full">
-              <FaSearch className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-400" />
-              <input
-                type="search"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search products..."
-                className="w-full rounded-full border border-stone-200 bg-stone-50 py-2 pl-9 pr-4 text-sm text-stone-700 outline-none focus:border-brand-400 focus:bg-white"
-              />
-            </label>
-          </form>
 
           <nav className="flex flex-col gap-1 px-4 py-4">
             {navLinks.map((link) => (

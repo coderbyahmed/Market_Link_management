@@ -20,7 +20,9 @@ const accountLinks = [
 const helpLinks = [
   { label: "How It Works", to: "/customer#how-it-works" },
   { label: "Cash on Delivery", to: "/customer/checkout" },
-  { label: "Back to Home", to: "/" },
+  { label: "About Us", to: "/customer/about" },
+  { label: "Contact Us", to: "/customer/contact" },
+  { label: "FAQs", to: "/customer/contact#faqs" },
   { label: "Login", to: "/login/customer" },
 ];
 

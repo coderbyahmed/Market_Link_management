@@ -31,19 +31,12 @@ const Home = () => {
           <HomeProducts
             accent="bg-cream/60"
             eyebrow="Featured This Week"
-            title="Farmer picks, you’ll love"
-            description="Hand-selected seasonal favourites our customers can’t stop ordering."
+            title="Farmer picks, you'll love"
+            description="Hand-selected seasonal favourites our customers can't stop ordering."
             products={products.filter((product) => product.featured).slice(0, 8)}
             viewAllTo="/customer/products"
           />
           <HomeCategories />
-          <HomeProducts
-            eyebrow="Freshly Harvested"
-            title="New from the farm"
-            description="Just arrived at the marketplace — get them while they’re at their best."
-            products={products.slice(0, 8)}
-            viewAllTo="/customer/products"
-          />
           <HomeHowItWorks />
           <HomeCta />
         </>

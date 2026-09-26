@@ -2,8 +2,11 @@ import { useEffect, useState } from "react";
 import { Drawer } from "antd";
 import AdminSidebar from "./AdminSidebar.jsx";
 import AdminHeader from "./AdminHeader.jsx";
+import { useSessionGuard } from "../../../hooks/useSessionGuard.js";
 
 const AdminLayout = ({ children }) => {
+  // Session guard: destroys session on browser back/forward
+  useSessionGuard({ loginPath: "/admin/login" });
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [theme, setTheme] = useState(
